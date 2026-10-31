@@ -5,13 +5,14 @@
 
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
+import { formatAmount, planPrice } from "@shared/prices";
 import { Check, Zap } from "lucide-react";
 
 const plans = [
   {
     id: "free" as const,
     name: "Free",
-    price: "$0",
+    price: formatAmount(planPrice("free").amount),
     period: "/month",
     tagline: "Start learning the system",
     features: [
@@ -31,7 +32,7 @@ const plans = [
   {
     id: "pro" as const,
     name: "Pro",
-    price: "$49",
+    price: formatAmount(planPrice("pro").amount),
     period: "/month",
     tagline: "For serious futures traders",
     badge: "Most Popular",
@@ -55,7 +56,7 @@ const plans = [
   {
     id: "elite" as const,
     name: "Elite",
-    price: "$149",
+    price: formatAmount(planPrice("elite").amount),
     period: "/month",
     tagline: "Trade alongside Brandon",
     features: [
@@ -160,7 +161,7 @@ export default function PricingSection() {
         </div>
 
         <p className="text-center text-xs text-white/30 mt-6 sm:mt-8">
-          All plans include a 7-day free trial. No credit card required to start.
+          Sales are final. Cancel anytime from your account page; your plan runs to the end of the paid month.
         </p>
       </div>
 

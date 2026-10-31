@@ -146,12 +146,18 @@ export default function Footer() {
                 <ul className="flex flex-col gap-2 sm:gap-2.5">
                   {links.map((link) => (
                     <li key={link}>
+                      {link === "Terms of Service" ? (
+                        <a href="/terms" className="text-xs sm:text-sm text-white/50 hover:text-white/80 transition-colors">
+                          {link}
+                        </a>
+                      ) : (
                       <button
                         className="text-xs sm:text-sm text-white/50 hover:text-white/80 transition-colors text-left"
                         onClick={() => toast.info(`${link} page coming soon!`)}
                       >
                         {link}
                       </button>
+                      )}
                     </li>
                   ))}
                 </ul>

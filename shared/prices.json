@@ -1,0 +1,10 @@
+{
+  "_readme": "Prices for ggtrading.io. Change a price here (a normal PR; the change bot can do it too). Amounts are in cents. When billing is live, a sync step creates the new Stripe Price on merge and moves the lookup key to it; existing subscribers keep their price. tax_code is Stripe's product tax code (txcd_10000000 = electronically supplied services; confirm before go-live).",
+  "currency": "usd",
+  "plans": [
+    { "id": "free", "name": "Free", "amount": 0, "interval": "month", "lookup_key": null, "tax_code": null },
+    { "id": "pro", "name": "Pro", "amount": 4900, "interval": "month", "lookup_key": "gg_pro_monthly", "tax_code": "txcd_10000000" },
+    { "id": "elite", "name": "Elite", "amount": 14900, "interval": "month", "lookup_key": "gg_elite_monthly", "tax_code": "txcd_10000000" }
+  ],
+  "items": []
+}

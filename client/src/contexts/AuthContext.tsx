@@ -1,14 +1,17 @@
 /* Member accounts: who is signed in, which plan they joined, and the sign-in dialog.
+   Agreeing to the Terms in the dialog is remembered and saved to the profile after sign-in.
    Joining a plan while signed out remembers the plan, opens the dialog, and finishes
    the signup after sign-in (also after Google's redirect or an email confirmation link). */
 
 import AuthDialog from "@/components/AuthDialog";
 import { callFunction, PLAN_NAMES, supabase, type Plan } from "@/lib/supabase";
+import { TERMS_VERSION } from "@/lib/terms";
 import type { User } from "@supabase/supabase-js";
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { toast } from "sonner";
 
 const PENDING_PLAN_KEY = "gg-pending-plan";
+const PENDING_TERMS_KEY = "gg-pending-terms";
 
 interface AuthState {
   user: User | null;
@@ -34,6 +37,24 @@ const readPendingPlan = (): Plan | null => {
     return null;
   }
 };
+/** Called by the dialog when someone ticks the Terms box, so it survives Google's redirect. */
+export const rememberTermsAccepted = () => {
+  try {
+    localStorage.setItem(PENDING_TERMS_KEY, TERMS_VERSION);
+  } catch {
+    // private browsing: email signups still carry it in their user metadata
+  }
+};
+const takePendingTerms = (): string | null => {
+  try {
+    const version = localStorage.getItem(PENDING_TERMS_KEY);
+    localStorage.removeItem(PENDING_TERMS_KEY);
+    return version;
+  } catch {
+    return null;
+  }
+};
+
 const writePendingPlan = (plan: Plan | null) => {
   try {
     if (plan) localStorage.setItem(PENDING_PLAN_KEY, plan);
@@ -52,8 +73,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const loadPlan = useCallback(async (u: User | null) => {
     if (!u) return setPlan(null);
-    const { data } = await supabase.from("profiles").select("plan").eq("id", u.id).maybeSingle();
+    const { data } = await supabase.from("profiles").select("plan, terms_version").eq("id", u.id).maybeSingle();
     setPlan((data?.plan as Plan | null) ?? null);
+    // Save the Terms acceptance once: from the ticked box (any sign-in) or the email signup's metadata.
+    const accepted = takePendingTerms() ?? (u.user_metadata?.terms_version as string | undefined) ?? null;
+    if (data && accepted && data.terms_version !== accepted) {
+      await supabase
+        .from("profiles")
+        .update({ terms_version: accepted, terms_accepted_at: new Date().toISOString() })
+        .eq("id", u.id);
+    }
   }, []);
 
   const submitPlan = useCallback(async (p: Plan) => {

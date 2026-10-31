@@ -1,12 +1,16 @@
-/* Sign-in / sign-up dialog. Google first (one click), email and password as the alternative. */
+/* Sign-in / sign-up dialog. Google first (one click), email and password as the alternative.
+   Creating an account (Google or email sign-up) needs the Terms of Service box ticked. */
 
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { rememberTermsAccepted } from "@/contexts/AuthContext";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Turnstile, { TURNSTILE_SITE_KEY } from "@/components/Turnstile";
 import { PLAN_NAMES, supabase, type Plan } from "@/lib/supabase";
+import { TERMS_VERSION } from "@/lib/terms";
 import { useState, type FormEvent } from "react";
 import { toast } from "sonner";
 
@@ -23,11 +27,20 @@ export default function AuthDialog({ open, onOpenChange, plan }: { open: boolean
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [checkEmail, setCheckEmail] = useState(false);
+  const [agreed, setAgreed] = useState(false);
   // Supabase checks this token itself once CAPTCHA protection is turned on in the project's Auth settings.
   const [captchaToken, setCaptchaToken] = useState("");
   const [captchaReset, setCaptchaReset] = useState(0);
 
+  const needTerms = () => {
+    if (agreed) return false;
+    toast.error("Please agree to the Terms of Service first.");
+    return true;
+  };
+
   async function google() {
+    if (needTerms()) return;
+    rememberTermsAccepted();
     setBusy(true);
     const { error } = await supabase.auth.signInWithOAuth({ provider: "google", options: { redirectTo: returnUrl() } });
     if (error) {
@@ -38,12 +51,18 @@ export default function AuthDialog({ open, onOpenChange, plan }: { open: boolean
 
   async function withEmail(e: FormEvent, mode: "signup" | "login") {
     e.preventDefault();
+    if (mode === "signup" && needTerms()) return;
     if (TURNSTILE_SITE_KEY && !captchaToken) return toast.error("Please wait for the spam check to finish.");
+    if (mode === "signup") rememberTermsAccepted();
     setBusy(true);
     const captcha = captchaToken || undefined;
     const { data, error } =
       mode === "signup"
-        ? await supabase.auth.signUp({ email, password, options: { emailRedirectTo: returnUrl(), captchaToken: captcha } })
+        ? await supabase.auth.signUp({
+            email,
+            password,
+            options: { emailRedirectTo: returnUrl(), captchaToken: captcha, data: { terms_version: TERMS_VERSION } },
+          })
         : await supabase.auth.signInWithPassword({ email, password, options: { captchaToken: captcha } });
     setBusy(false);
     setCaptchaReset((n) => n + 1);
@@ -96,6 +115,17 @@ export default function AuthDialog({ open, onOpenChange, plan }: { open: boolean
           </p>
         ) : (
           <div className="flex flex-col gap-4">
+            <label htmlFor="agree-terms" className="flex items-start gap-2.5 text-sm text-white/75 leading-snug cursor-pointer">
+              <Checkbox id="agree-terms" checked={agreed} onCheckedChange={(v) => setAgreed(v === true)} className="mt-0.5 border-white/30" />
+              <span>
+                I agree to the{" "}
+                <a href="/terms" target="_blank" rel="noopener" className="underline text-[oklch(0.75_0.15_292)] hover:text-white">
+                  Terms of Service
+                </a>
+                , including that all sales are final. Needed to create an account.
+              </span>
+            </label>
+
             <Button onClick={google} disabled={busy} className="bg-white text-[oklch(0.15_0.03_265)] hover:bg-white/90 font-semibold gap-2">
               <GoogleIcon /> Continue with Google
             </Button>
