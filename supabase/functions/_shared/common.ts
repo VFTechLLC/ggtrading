@@ -19,6 +19,12 @@ function corsHeaders(req: Request): Record<string, string> {
   };
 }
 
+/** The site origin for links back from Stripe: the calling page's origin when it is one of ours, else ggtrading.io. */
+export const siteOrigin = (req: Request) => {
+  const origin = req.headers.get("Origin") ?? "";
+  return ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0]!;
+};
+
 export const preflight = (req: Request) => new Response(null, { status: 204, headers: corsHeaders(req) });
 
 export const json = (req: Request, status: number, body: unknown) =>

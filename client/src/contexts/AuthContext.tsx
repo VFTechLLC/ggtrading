@@ -89,6 +89,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (joining.current) return;
     joining.current = true;
     try {
+      // Paid plans go to Stripe Checkout when online payment is on for this member; otherwise the plan is just saved.
+      if (p === "pro" || p === "elite") {
+        const checkout = await callFunction<{ enabled: boolean; url?: string }>("billing-checkout", { plan: p });
+        if (checkout.enabled && checkout.url) {
+          writePendingPlan(null);
+          window.location.assign(checkout.url);
+          return;
+        }
+      }
       const result = await callFunction<{ alreadyMember?: boolean }>("membership", { plan: p });
       setPlan(p);
       writePendingPlan(null);

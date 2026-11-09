@@ -85,6 +85,23 @@ export default function Account() {
     void load();
   }, [load]);
 
+  // Back from Stripe Checkout: Stripe tells us about the new plan a few seconds later, so check again for ~20s.
+  useEffect(() => {
+    if (!user || new URLSearchParams(window.location.search).get("billing") !== "success") return;
+    window.history.replaceState(null, "", window.location.pathname);
+    toast.success("Payment received. Setting up your plan…");
+    let tries = 0;
+    const timer = window.setInterval(async () => {
+      tries += 1;
+      const { data } = await supabase.from("subscriptions").select("id").in("status", LIVE_STATUSES).limit(1);
+      if (data?.length || tries >= 10) {
+        window.clearInterval(timer);
+        void load();
+      }
+    }, 2000);
+    return () => window.clearInterval(timer);
+  }, [user, load]);
+
   async function cancel() {
     if (!subscription) return;
     setBusy(true);

@@ -8,3 +8,16 @@ verify_jwt = false
 
 [functions.membership]
 verify_jwt = false
+
+# Billing (Stripe). The three member functions check the signed-in user themselves; Stripe calls the webhook without a JWT.
+[functions.billing-checkout]
+verify_jwt = false
+
+[functions.billing-portal]
+verify_jwt = false
+
+[functions.billing-cancel]
+verify_jwt = false
+
+[functions.stripe-webhook]
+verify_jwt = false
