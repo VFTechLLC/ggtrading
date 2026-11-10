@@ -154,10 +154,10 @@ export async function saveSubscription(sub: StripeObject) {
       updated_at: new Date().toISOString(),
     },
     { onConflict: "id" },
-  );
+  ).then(throwOnError(`subscription ${sub.id}`));
   // The plan on the profile follows the live subscription; an ended one drops the member back to Free.
   const live = LIVE_STATUSES.includes(sub.status);
-  await db.from("profiles").update({ plan: live ? plan : "free", plan_selected_at: new Date().toISOString() }).eq("id", userId);
+  await db.from("profiles").update({ plan: live ? plan : "free", plan_selected_at: new Date().toISOString() }).eq("id", userId).then(throwOnError(`plan for ${userId}`));
   return userId;
 }
 
@@ -181,7 +181,12 @@ export async function saveInvoice(invoiceId: string) {
     ? String(pm.type).replace(/_/g, " ")
     : null;
   const db = serviceClient();
-  const { data: sub } = subscriptionId ? await db.from("subscriptions").select("plan").eq("id", subscriptionId).maybeSingle() : { data: null };
+  // Stripe often sends the invoice before checkout.session.completed: save its subscription first (the FK needs it).
+  let { data: sub } = subscriptionId ? await db.from("subscriptions").select("plan").eq("id", subscriptionId).maybeSingle() : { data: null };
+  if (subscriptionId && !sub) {
+    await saveSubscription(await stripe("GET", `subscriptions/${subscriptionId}`));
+    ({ data: sub } = await db.from("subscriptions").select("plan").eq("id", subscriptionId).maybeSingle());
+  }
   const plan = (sub?.plan as string | undefined) ?? (details?.metadata?.plan as string | undefined);
   const tax = (inv.total_taxes ?? []).reduce((sum: number, t: StripeObject) => sum + (t.amount ?? 0), 0);
   await db.from("invoices").upsert(
@@ -204,5 +209,10 @@ export async function saveInvoice(invoiceId: string) {
       paid_at: inv.status_transitions?.paid_at ? new Date(inv.status_transitions.paid_at * 1000).toISOString() : null,
     },
     { onConflict: "id" },
-  );
+  ).then(throwOnError(`invoice ${inv.id}`));
 }
+
+/** supabase-js returns errors instead of throwing; turn them into throws so the webhook answers 500 and Stripe retries. */
+const throwOnError = (what: string) => ({ error }: { error: { message: string } | null }) => {
+  if (error) throw new Error(`Saving ${what} failed: ${error.message}`);
+};
