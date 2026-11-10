@@ -97,7 +97,7 @@ Source code is in `VFTechLLC/ggtrading`; every push to main builds it into GitHu
 | Page text, design | `client/src/` in this repo. Every push to main goes live automatically. |
 | Form and plan logic | `supabase/functions/`, deployed with `supabase functions deploy` |
 | Settings and secrets | Supabase → GG Trading → Edge Functions → Secrets |
-| Who gets contact emails | Edge Function secret `ADMIN_EMAIL` (default admin@vftech.io) |
+| Who gets contact, signup and subscription notices | Edge Function secret `ADMIN_EMAIL`, comma-separated (default admin@vftech.io,contact@ggtrading.io) |
 | Sign-in emails | Supabase → Authentication → Emails → SMTP (Resend) |
 | DNS | Cloudflare, account Admin@vftech.io, zone `ggtrading.io` |
 | Sending email | Resend team `vftech`, domain ggtrading.io verified |

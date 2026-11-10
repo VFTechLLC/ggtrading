@@ -126,9 +126,9 @@ export default function Navbar() {
           {/* Desktop CTA — violet primary */}
           <div className="hidden md:flex items-center gap-3">
             {user && (
-              <span className="text-xs text-white/50 max-w-[160px] truncate" title={user.email}>
-                {user.email}
-              </span>
+              <Link href="/account" className="text-xs text-white/60 hover:text-white max-w-[160px] truncate" title={user.email}>
+                My account
+              </Link>
             )}
             <Button
               variant="ghost"
@@ -170,6 +170,15 @@ export default function Navbar() {
                 {link.label}
               </Link>
             ))}
+            {user && (
+              <Link
+                href="/account"
+                className="text-sm text-white/70 hover:text-white py-2 border-b border-white/5"
+                onClick={() => setMobileOpen(false)}
+              >
+                My account
+              </Link>
+            )}
             <Button
               variant="outline"
               className="mt-2 border-white/20 bg-white/5 text-white"
