@@ -84,7 +84,7 @@ for (const plan of paid) {
 
 const portal = (await stripe("GET", "billing_portal/configurations", { is_default: "true", limit: 1 })).data[0];
 const portalSettings = {
-  business_profile: { headline: "GG Trading billing: update your payment method or see invoices.", terms_of_service_url: `${site}/terms`, privacy_policy_url: `${site}/terms` },
+  business_profile: { headline: "GG Trading billing", terms_of_service_url: `${site}/terms`, privacy_policy_url: `${site}/terms` },
   features: {
     invoice_history: { enabled: "true" },
     payment_method_update: { enabled: "true" },
