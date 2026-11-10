@@ -6,8 +6,10 @@ const ALLOWED_ORIGINS = (Deno.env.get("ALLOWED_ORIGINS") ?? "https://ggtrading.i
   .map((s) => s.trim());
 
 export const SITE_NAME = Deno.env.get("SITE_NAME") ?? "GG Trading";
-// Where contact messages and signup notices go. admin@vftech.io for now; set ADMIN_EMAIL to change it.
-export const ADMIN_EMAIL = Deno.env.get("ADMIN_EMAIL") ?? "admin@vftech.io";
+// Where contact messages and signup notices go (comma-separated): VF Tech and GG's own mailbox, which VF Tech still
+// runs (boss, 2026-11-10). Set ADMIN_EMAIL to change it.
+export const ADMIN_EMAIL = Deno.env.get("ADMIN_EMAIL") ?? "admin@vftech.io,contact@ggtrading.io";
+const addresses = (list: string) => list.split(",").map((a) => a.trim()).filter(Boolean);
 
 function corsHeaders(req: Request): Record<string, string> {
   const origin = req.headers.get("Origin") ?? "";
@@ -73,10 +75,10 @@ export async function sendEmails(emails: { template: "user" | "admin"; email: Em
     body: JSON.stringify(
       emails.map(({ email }) => ({
         from,
-        to: [email.toName ? `${email.toName.replace(/[<>"]/g, "")} <${email.to}>` : email.to],
+        to: email.toName ? [`${email.toName.replace(/[<>"]/g, "")} <${email.to}>`] : addresses(email.to),
         subject: email.subject,
         text: email.message,
-        reply_to: email.replyTo ?? ADMIN_EMAIL,
+        reply_to: addresses(email.replyTo ?? ADMIN_EMAIL),
       })),
     ),
   });
