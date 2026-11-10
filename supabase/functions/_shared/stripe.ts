@@ -166,13 +166,15 @@ export async function saveSubscription(sub: StripeObject) {
  * parent.subscription_details, tax is total_taxes[], and the card or bank comes from the invoice's payments.
  */
 export async function saveInvoice(invoiceId: string) {
-  const inv = await stripe("GET", `invoices/${invoiceId}`, { expand: ["payments.data.payment.payment_intent.payment_method"] });
+  // Stripe expands at most 4 levels, so the payment method itself is a second call.
+  const inv = await stripe("GET", `invoices/${invoiceId}`, { expand: ["payments.data.payment.payment_intent"] });
   if (inv.status === "draft") return;
   const details = inv.parent?.subscription_details;
   const userId = await memberFor(inv.customer, details?.metadata?.gg_user_id);
   if (!userId) return;
   const subscriptionId: string | null = typeof details?.subscription === "string" ? details.subscription : details?.subscription?.id ?? null;
-  const pm = (inv.payments?.data ?? []).map((p: StripeObject) => p.payment?.payment_intent?.payment_method).find((m: unknown) => m && typeof m === "object");
+  const pmId = (inv.payments?.data ?? []).map((p: StripeObject) => p.payment?.payment_intent?.payment_method).find((m: unknown) => typeof m === "string");
+  const pm: StripeObject | null = pmId ? await stripe("GET", `payment_methods/${pmId}`).catch(() => null) : null;
   const paymentMethod = pm?.card
     ? `${String(pm.card.brand ?? "Card").replace(/^./, (c: string) => c.toUpperCase())} •••• ${pm.card.last4}`
     : pm?.us_bank_account
