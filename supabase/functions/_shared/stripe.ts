@@ -7,11 +7,13 @@
 //   STRIPE_WEBHOOK_SECRET  whsec_… of the endpoint …/functions/v1/stripe-webhook
 //   BILLING_TEST_EMAILS    with a test key, only these members (comma-separated) get Checkout; everyone else keeps
 //                          today's flow (the plan is saved, no payment). Ignored with a live key.
-//   STRIPE_TAX             "on" to let Stripe Tax add sales tax (needs Stripe Tax set up first)
+//
+// The GG Stripe account (created 2026-11) has Managed Payments on by default: Stripe picks the payment methods (set
+// them in the Stripe dashboard) and handles sales tax, and it needs API version 2025-03-31.basil or later.
 import { serviceClient } from "./common.ts";
 
 const STRIPE_API = "https://api.stripe.com/v1/";
-const STRIPE_VERSION = "2024-06-20";
+const STRIPE_VERSION = "2025-03-31.basil";
 export const PAID_PLANS = ["pro", "elite"] as const;
 export type PaidPlan = (typeof PAID_PLANS)[number];
 export const LIVE_STATUSES = ["active", "trialing", "past_due", "unpaid", "incomplete"];
@@ -159,30 +161,40 @@ export async function saveSubscription(sub: StripeObject) {
   return userId;
 }
 
-/** Saves one invoice for the billing history (re-read with its charge, so the card or bank shows). */
+/**
+ * Saves one invoice for the billing history. API 2025-03-31.basil shapes: the subscription is under
+ * parent.subscription_details, tax is total_taxes[], and the card or bank comes from the invoice's payments.
+ */
 export async function saveInvoice(invoiceId: string) {
-  const inv = await stripe("GET", `invoices/${invoiceId}`, { expand: ["charge"] });
+  const inv = await stripe("GET", `invoices/${invoiceId}`, { expand: ["payments.data.payment.payment_intent.payment_method"] });
   if (inv.status === "draft") return;
-  const userId = await memberFor(inv.customer, inv.subscription_details?.metadata?.gg_user_id);
+  const details = inv.parent?.subscription_details;
+  const userId = await memberFor(inv.customer, details?.metadata?.gg_user_id);
   if (!userId) return;
-  const pm = inv.charge?.payment_method_details;
+  const subscriptionId: string | null = typeof details?.subscription === "string" ? details.subscription : details?.subscription?.id ?? null;
+  const pm = (inv.payments?.data ?? []).map((p: StripeObject) => p.payment?.payment_intent?.payment_method).find((m: unknown) => m && typeof m === "object");
   const paymentMethod = pm?.card
     ? `${String(pm.card.brand ?? "Card").replace(/^./, (c: string) => c.toUpperCase())} •••• ${pm.card.last4}`
     : pm?.us_bank_account
     ? `${pm.us_bank_account.bank_name ?? "Bank"} •••• ${pm.us_bank_account.last4}`
+    : pm?.type
+    ? String(pm.type).replace(/_/g, " ")
     : null;
-  const plan = planFromLookupKey(inv.lines?.data?.[0]?.price?.lookup_key);
-  await serviceClient().from("invoices").upsert(
+  const db = serviceClient();
+  const { data: sub } = subscriptionId ? await db.from("subscriptions").select("plan").eq("id", subscriptionId).maybeSingle() : { data: null };
+  const plan = (sub?.plan as string | undefined) ?? (details?.metadata?.plan as string | undefined);
+  const tax = (inv.total_taxes ?? []).reduce((sum: number, t: StripeObject) => sum + (t.amount ?? 0), 0);
+  await db.from("invoices").upsert(
     {
       id: inv.id,
       user_id: userId,
-      subscription_id: inv.subscription ?? null,
+      subscription_id: subscriptionId,
       number: inv.number ?? null,
-      description: plan ? `GG Trading ${plan === "pro" ? "Pro" : "Elite"} (monthly)` : (inv.lines?.data?.[0]?.description ?? "GG Trading"),
+      description: plan === "pro" || plan === "elite" ? `GG Trading ${plan === "pro" ? "Pro" : "Elite"} (monthly)` : (inv.lines?.data?.[0]?.description ?? "GG Trading"),
       status: inv.status,
       currency: inv.currency ?? "usd",
       subtotal: inv.subtotal ?? 0,
-      tax: inv.tax ?? 0,
+      tax,
       total: inv.total ?? 0,
       amount_paid: inv.amount_paid ?? 0,
       payment_method: paymentMethod,

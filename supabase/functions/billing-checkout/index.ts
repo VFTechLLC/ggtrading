@@ -45,13 +45,12 @@ Deno.serve(async (req) => {
       customer,
       client_reference_id: user.id,
       line_items: [{ price: price.id, quantity: 1 }],
-      // Cards and US bank (ACH) only, as for VF Tech (boss, 2026-11-08).
-      payment_method_types: ["card", "us_bank_account"],
+      // Payment methods and sales tax are Stripe's (Managed Payments): set methods in the Stripe dashboard
+      // (boss's choice for VF Tech was cards + ACH, 2026-11-08).
       success_url: `${origin}/account?billing=success`,
       cancel_url: `${origin}/#pricing`,
       billing_address_collection: "required",
       customer_update: { address: "auto", name: "auto" },
-      automatic_tax: { enabled: Deno.env.get("STRIPE_TAX") === "on" ? "true" : "false" },
       subscription_data: { metadata },
       metadata,
       allow_promotion_codes: "false",
