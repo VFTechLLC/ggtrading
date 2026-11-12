@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Turnstile, { TURNSTILE_SITE_KEY } from "@/components/Turnstile";
 import { PLAN_NAMES, supabase, type Plan } from "@/lib/supabase";
 import { TERMS_VERSION } from "@/lib/terms";
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { toast } from "sonner";
 
 const GoogleIcon = () => (
@@ -31,6 +31,10 @@ export default function AuthDialog({ open, onOpenChange, plan }: { open: boolean
   // Supabase checks this token itself once CAPTCHA protection is turned on in the project's Auth settings.
   const [captchaToken, setCaptchaToken] = useState("");
   const [captchaReset, setCaptchaReset] = useState(0);
+  const [tab, setTab] = useState<"signup" | "login">(plan ? "signup" : "login");
+  useEffect(() => {
+    if (open) setTab(plan ? "signup" : "login");
+  }, [open, plan]);
 
   const needTerms = () => {
     if (agreed) return false;
@@ -61,14 +65,32 @@ export default function AuthDialog({ open, onOpenChange, plan }: { open: boolean
         ? await supabase.auth.signUp({
             email,
             password,
-            options: { emailRedirectTo: returnUrl(), captchaToken: captcha, data: { terms_version: TERMS_VERSION } },
+            // The chosen plan rides along with the account, so it survives a closed tab or confirming on another device.
+            options: { emailRedirectTo: returnUrl(), captchaToken: captcha, data: { terms_version: TERMS_VERSION, ...(plan ? { pending_plan: plan } : {}) } },
           })
         : await supabase.auth.signInWithPassword({ email, password, options: { captchaToken: captcha } });
     setBusy(false);
     setCaptchaReset((n) => n + 1);
     if (error) return toast.error(error.message);
+    // An email that already has an account: Supabase answers "ok" but sends nothing (so outsiders can't probe emails).
+    // It shows up as a user with no identities; tell the person to log in instead of waiting for an email.
+    if (mode === "signup" && data.user && (data.user.identities?.length ?? 1) === 0) {
+      setTab("login");
+      return toast.info("This email already has an account. Log in instead, or use Continue with Google if you signed up that way.");
+    }
     // With email confirmation on, sign-up returns no session until the link in the email is clicked.
     if (mode === "signup" && !data.session) setCheckEmail(true);
+  }
+
+  async function forgotPassword() {
+    if (!email) return toast.error("Enter your email above first.");
+    if (TURNSTILE_SITE_KEY && !captchaToken) return toast.error("Please wait for the spam check to finish.");
+    setBusy(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: returnUrl(), captchaToken: captchaToken || undefined });
+    setBusy(false);
+    setCaptchaReset((n) => n + 1);
+    if (error) return toast.error(error.message);
+    toast.success("If that email has an account, a link to set a new password is on its way.");
   }
 
   const emailForm = (mode: "signup" | "login") => (
@@ -89,6 +111,11 @@ export default function AuthDialog({ open, onOpenChange, plan }: { open: boolean
           onChange={(e) => setPassword(e.target.value)}
         />
       </div>
+      {mode === "login" && (
+        <button type="button" onClick={() => void forgotPassword()} disabled={busy} className="self-start text-xs text-[oklch(0.75_0.15_292)] hover:text-white underline">
+          Forgot password?
+        </button>
+      )}
       <Turnstile onToken={setCaptchaToken} resetKey={captchaReset} />
       <Button type="submit" disabled={busy} className="bg-[oklch(0.48_0.26_292)] hover:bg-[oklch(0.55_0.26_292)] text-white font-semibold">
         {mode === "signup" ? "Create account" : "Log in"}
@@ -134,7 +161,7 @@ export default function AuthDialog({ open, onOpenChange, plan }: { open: boolean
               <div className="h-px flex-1 bg-white/10" /> or use email <div className="h-px flex-1 bg-white/10" />
             </div>
 
-            <Tabs defaultValue={plan ? "signup" : "login"}>
+            <Tabs value={tab} onValueChange={(v) => setTab(v as "signup" | "login")}>
               <TabsList className="w-full">
                 <TabsTrigger value="signup">Sign up</TabsTrigger>
                 <TabsTrigger value="login">Log in</TabsTrigger>

@@ -83,6 +83,12 @@ Source code is in `VFTechLLC/ggtrading`; every push to main builds it into GitHu
 1. Join opens the sign-in dialog: Google, or email and password with a Turnstile check.
 2. Email sign-ups get a confirmation email from Supabase, sent through Resend.
 3. A profile row is created for the new member.
+4. If they picked a plan first, it is saved on the account at sign-up and applied once they confirm, even if they closed the tab or confirmed on another device.
+5. Signing up with an email that already has an account shows "log in instead" (Supabase sends no email in that case).
+
+**Someone forgot their password**
+1. Log in tab → "Forgot password?" → Supabase emails a reset link (through Resend).
+2. The link brings them back signed in for that purpose, and a "Set a new password" box opens.
 
 **A member picks a plan**
 1. They choose Free, Pro or Elite in Pricing.

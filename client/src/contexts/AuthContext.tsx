@@ -4,6 +4,7 @@
    the signup after sign-in (also after Google's redirect or an email confirmation link). */
 
 import AuthDialog from "@/components/AuthDialog";
+import ResetPasswordDialog from "@/components/ResetPasswordDialog";
 import { callFunction, PLAN_NAMES, supabase, type Plan } from "@/lib/supabase";
 import { TERMS_VERSION } from "@/lib/terms";
 import type { User } from "@supabase/supabase-js";
@@ -69,6 +70,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [plan, setPlan] = useState<Plan | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogPlan, setDialogPlan] = useState<Plan | null>(null);
+  const [recovering, setRecovering] = useState(false);
   const joining = useRef(false);
 
   const loadPlan = useCallback(async (u: User | null) => {
@@ -122,11 +124,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const u = session?.user ?? null;
       setUser(u);
       void loadPlan(u);
+      // The link in a "reset your password" email signs the person in for this one purpose: ask for the new password.
+      if (event === "PASSWORD_RECOVERY") {
+        setDialogOpen(false);
+        setRecovering(true);
+        return;
+      }
       if (event === "SIGNED_IN" && u) {
         setDialogOpen(false);
-        const pending = readPendingPlan();
-        // Supabase calls this listener while holding its auth lock; call the function afterwards.
-        if (pending) setTimeout(() => void submitPlan(pending), 0);
+        // The plan picked before signing up: this browser's note, or the one saved on the account at sign-up
+        // (survives a closed tab or confirming the email on another device). Used once, then cleared.
+        const meta = u.user_metadata?.pending_plan as string | undefined;
+        const fromAccount = meta === "free" || meta === "pro" || meta === "elite" ? meta : null;
+        const pending = readPendingPlan() ?? fromAccount;
+        // Supabase calls this listener while holding its auth lock; call the functions afterwards.
+        setTimeout(() => {
+          if (fromAccount) void supabase.auth.updateUser({ data: { pending_plan: null } });
+          if (pending) void submitPlan(pending);
+        }, 0);
       }
     });
     return () => sub.subscription.unsubscribe();
@@ -155,6 +170,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     <AuthContext.Provider value={{ user, plan, openAuth, join, signOut }}>
       {children}
       <AuthDialog open={dialogOpen} onOpenChange={setDialogOpen} plan={dialogPlan} />
+      <ResetPasswordDialog open={recovering} onClose={() => setRecovering(false)} />
     </AuthContext.Provider>
   );
 }
