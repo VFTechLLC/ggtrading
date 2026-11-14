@@ -1,6 +1,6 @@
 /* GG Trading Hero Section
-   Design: v6 fusion hero — Brandon's real MNQ chart style (white MA arc, red ribbons,
-   trade boxes) fused with cinematic violet nebula atmosphere. No bull. No crypto.
+   Design: generated monitor-wall hero (MNQ 5m candles, white MA arc, EMA ribbon,
+   trade boxes, DOM) in a cinematic violet nebula; see scripts/hero/gen.py. No bull. No crypto.
    Frosted glass panel left-aligned — 65% opacity, 20px blur, darker background.
    Copy uses Brandon's authentic teaching voice: FVG, EMA, ORB, micro contracts.
    "See Our Results" scrolls to #performance. */
@@ -9,8 +9,9 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { TrendingUp, Zap, BarChart2 } from "lucide-react";
 
-const HERO_IMAGE =
-  "https://d2xsxph8kpxj0f.cloudfront.net/310519663273809872/A28evjrqCmFMdqNrmCPLoV/gg_hero_v6_fusion-kBoMtMnGugJgHHiESbPj8p.webp";
+// Served from client/public so it can't vanish with a third-party host again.
+// Regenerate with: python3 scripts/hero/gen.py client/public/gg_hero.webp 23
+const HERO_IMAGE = "/gg_hero.webp";
 
 const stats = [
   { label: "Win Rate",          value: "78.4%",         color: "text-[oklch(0.68_0.19_162)]" },
