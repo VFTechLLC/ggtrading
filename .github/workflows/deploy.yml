@@ -36,14 +36,8 @@ jobs:
       - name: Build
         run: pnpm run build
         env:
-          # Vite static build — analytics vars are optional; set them in repo secrets if needed
-          VITE_ANALYTICS_ENDPOINT: ""
-          VITE_ANALYTICS_WEBSITE_ID: ""
           VITE_APP_ID: "gg-trading"
-          VITE_APP_TITLE: "GG Trading — Green Gains"
-          VITE_FRONTEND_FORGE_API_KEY: ""
-          VITE_FRONTEND_FORGE_API_URL: ""
-          VITE_OAUTH_PORTAL_URL: ""
+          VITE_APP_TITLE: "GG Trading — Growth & Gains"
 
       # 6. Add a .nojekyll file so GitHub Pages serves the Vite output correctly
       - name: Add .nojekyll
