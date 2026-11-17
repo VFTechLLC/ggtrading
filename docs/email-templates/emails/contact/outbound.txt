@@ -1,0 +1,7 @@
+Hi {{name}},
+
+Thanks for contacting GG Trading. We'll get back to you at {{email}} soon.
+
+Want to add anything? Just reply to this email.
+
+The GG Trading team

@@ -1,0 +1,20 @@
+{
+  "_note": "Paid subscription started (supabase/functions/stripe-webhook, checkout completed). Outbound to the member, inbound to ADMIN_EMAIL with Reply-To the member. Best-effort.",
+  "outbound": {
+    "subject": "Welcome to GG Trading {{plan}}",
+    "preheader": "Your payment went through and your plan is active.",
+    "footer_note": "You're getting this because you subscribed to a GG Trading plan. Your receipt comes separately from our payment provider."
+  },
+  "inbound": {
+    "subject": "New paid GG Trading {{plan}} subscription",
+    "preheader": "{{display_name}} <{{email}}> subscribed to {{plan}}",
+    "header_label": "Paid subscription",
+    "footer_note": "Hit Reply to answer {{email}} directly. Details in Stripe and Supabase, table profiles."
+  },
+  "sample": {
+    "name": "Jordan Sample",
+    "display_name": "Jordan Sample",
+    "email": "jordan@example.com",
+    "plan": "Elite"
+  }
+}

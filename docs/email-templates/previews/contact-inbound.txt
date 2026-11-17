@@ -1,0 +1,11 @@
+Subject: New GG Trading contact message from Jordan Sample
+
+From: Jordan Sample <jordan@example.com> (member)
+Reply: jordan@example.com
+
+Do you cover NQ on Sundays?
+<b>test</b> & "quotes"
+
+------------------------------------------------------------
+Sent Nov 17, 2026, 10:04 AM ET by ggtrading.io
+Hit Reply to answer jordan@example.com directly. Saved in Supabase, table contact_messages.

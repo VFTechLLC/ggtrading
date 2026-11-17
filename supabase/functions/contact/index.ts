@@ -1,5 +1,6 @@
 // Contact form: saves the message, then emails the sender a confirmation and VFTech the message.
-import { ADMIN_EMAIL, json, preflight, requestUser, sendEmails, serviceClient, SITE_NAME } from "../_shared/common.ts";
+import { ADMIN_EMAIL, json, preflight, requestUser, sendEmails, serviceClient, siteOrigin } from "../_shared/common.ts";
+import { renderEmail } from "../_shared/email-render.ts";
 
 const MAX_PER_HOUR = 5;
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -66,25 +67,13 @@ Deno.serve(async (req) => {
     return json(req, 500, { error: "Something went wrong. Please try again." });
   }
 
+  // docs/email-templates/emails/contact. The visitor's copy doesn't repeat their message: the form must not be a way
+  // to send arbitrary text to any address.
+  const origin = siteOrigin(req);
+  const vars = { name, email, message, member: user ? "yes" : "", member_line: user ? "Yes, signed in" : "No" };
   const emailed = await sendEmails([
-    {
-      template: "user",
-      email: {
-        to: email,
-        toName: name,
-        subject: `We got your message`,
-        message: `Hi ${name},\n\nThanks for contacting ${SITE_NAME}. We'll get back to you at this address soon.\n\nYour message:\n${message}`,
-      },
-    },
-    {
-      template: "admin",
-      email: {
-        to: ADMIN_EMAIL,
-        subject: `New ${SITE_NAME} contact message from ${name}`,
-        message: `From: ${name} <${email}>${user ? " (member)" : ""}\n\n${message}`,
-        replyTo: email,
-      },
-    },
+    { template: "user", email: { to: email, toName: name, ...renderEmail("contact", "outbound", vars, origin) } },
+    { template: "admin", email: { to: ADMIN_EMAIL, replyTo: email, ...renderEmail("contact", "inbound", vars, origin) } },
   ]);
   if (emailed) await db.from("contact_messages").update({ emailed: true }).eq("id", saved.id);
 

@@ -1,0 +1,1 @@
+{{display_name}} <{{email}}> signed up for the {{plan}} plan{{#previous_plan}} (was {{previous_plan}}){{/previous_plan}}.

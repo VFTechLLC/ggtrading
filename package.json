@@ -9,7 +9,9 @@
     "start": "NODE_ENV=production node dist/index.js",
     "preview": "vite preview --host",
     "check": "tsc --noEmit",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "emails:build": "node scripts/build-emails.mjs --previews",
+    "check:emails": "node scripts/build-emails.mjs --check"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

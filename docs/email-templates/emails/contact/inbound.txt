@@ -1,0 +1,4 @@
+From: {{name}} <{{email}}>{{#member}} (member){{/member}}
+Reply: {{email}}
+
+{{message}}

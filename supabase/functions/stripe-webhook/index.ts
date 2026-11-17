@@ -1,7 +1,8 @@
 // Stripe → us: subscription and invoice changes, signature-checked with STRIPE_WEBHOOK_SECRET.
 // Events can arrive late, twice or out of order, so each one re-reads the object from Stripe and saves it as it is now.
 // Endpoint: https://gbiribpgeolhwfsduluy.supabase.co/functions/v1/stripe-webhook (verify_jwt off: Stripe has no JWT).
-import { ADMIN_EMAIL, json, preflight, sendEmails, serviceClient, SITE_NAME } from "../_shared/common.ts";
+import { ADMIN_EMAIL, json, preflight, sendEmails, serviceClient } from "../_shared/common.ts";
+import { renderEmail } from "../_shared/email-render.ts";
 import { HttpError, saveInvoice, saveSubscription, stripe, verifyWebhook } from "../_shared/stripe.ts";
 
 const PLAN_NAMES: Record<string, string> = { pro: "Pro", elite: "Elite" };
@@ -42,21 +43,10 @@ async function welcome(userId: string, plan: string | undefined) {
   if (!profile?.email) return;
   const name = (profile.full_name as string | null) ?? "";
   const planName = PLAN_NAMES[plan ?? ""] ?? "paid";
+  // docs/email-templates/emails/subscription
+  const vars = { name, display_name: name || "A member", email: profile.email as string, plan: planName };
   await sendEmails([
-    {
-      template: "user",
-      email: {
-        to: profile.email,
-        toName: name,
-        subject: `Welcome to ${SITE_NAME} ${planName}`,
-        message:
-          `Hi${name ? ` ${name}` : ""},\n\nThanks for subscribing to ${SITE_NAME} ${planName}! Your payment went through and your plan is active.\n\n` +
-          `You can see your plan, invoices and the cancel option any time on your account page: https://ggtrading.io/account`,
-      },
-    },
-    {
-      template: "admin",
-      email: { to: ADMIN_EMAIL, subject: `New paid ${SITE_NAME} ${planName} subscription`, message: `${name || "A member"} <${profile.email}> subscribed to ${planName}.`, replyTo: profile.email },
-    },
+    { template: "user", email: { to: profile.email, toName: name, ...renderEmail("subscription", "outbound", vars) } },
+    { template: "admin", email: { to: ADMIN_EMAIL, replyTo: profile.email, ...renderEmail("subscription", "inbound", vars) } },
   ]);
 }

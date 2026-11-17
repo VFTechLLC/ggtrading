@@ -1,0 +1,14 @@
+{{content}}
+
+------------------------------------------------------------
+GG Trading, Growth & Gains Trading
+Your account: {{link_account}}
+Pricing: {{link_pricing}}
+Streams: {{link_streams}}
+Discord: {{discord_url}}
+Contact: {{contact_email}}
+
+Futures and options trading involves substantial risk of loss and is not suitable for all investors. Past performance is not indicative of future results.
+
+{{footer_note}}
+Terms of Service: {{link_terms}}

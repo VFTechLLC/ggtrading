@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="x-apple-disable-message-reformatting">
+<meta name="color-scheme" content="light dark">
+<meta name="supported-color-schemes" content="light dark">
+<title>{{subject}}</title>
+<!-- GG Trading OUTBOUND base: every email sent to members and visitors. {{content}} is one email from
+     emails/<name>/outbound.html. The header is the site's navy with the logo (it stays navy in dark mode); the risk
+     disclaimer is the only red, as on the site. Light mode is inline; <style> only adds dark mode and the phone layout. -->
+<style>
+  :root { color-scheme: light dark; supported-color-schemes: light dark; }
+  @media (prefers-color-scheme: dark) {
+    .em-page { background-color: #000106 !important; }
+    .em-card { background-color: #081431 !important; border-color: #1c2a4d !important; }
+    .em-h { color: #e4e8ef !important; }
+    .em-t { color: #c3cad8 !important; }
+    .em-m { color: #8f9ab0 !important; }
+    .em-panel { background-color: #050d24 !important; border-color: #1c2a4d !important; }
+    .em-foot { background-color: #050d24 !important; border-color: #1c2a4d !important; }
+    .em-link { color: #3df59a !important; }
+    .em-risk { color: #ff8a80 !important; }
+  }
+  [data-ogsc] .em-h { color: #e4e8ef !important; }
+  [data-ogsc] .em-t { color: #c3cad8 !important; }
+  [data-ogsc] .em-m { color: #8f9ab0 !important; }
+  [data-ogsc] .em-link { color: #3df59a !important; }
+  [data-ogsb] .em-page { background-color: #000106 !important; }
+  [data-ogsb] .em-card { background-color: #081431 !important; }
+  [data-ogsb] .em-panel { background-color: #050d24 !important; }
+  [data-ogsb] .em-foot { background-color: #050d24 !important; }
+  @media only screen and (max-width: 480px) {
+    .em-pad { padding-left: 20px !important; padding-right: 20px !important; }
+  }
+</style>
+</head>
+<body class="em-page" style="margin:0;padding:0;background-color:#eceef5;">
+<div style="display:none;max-height:0;overflow:hidden;mso-hide:all;font-size:1px;line-height:1px;color:#eceef5;">{{preheader}}&#8199;&#65279;&#847;&#8199;&#65279;&#847;&#8199;&#65279;&#847;&#8199;&#65279;&#847;</div>
+
+<table role="presentation" class="em-page" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#eceef5" style="background-color:#eceef5;">
+<tr>
+<td align="center" style="padding:28px 12px;">
+
+<!--[if mso]><table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0"><tr><td><![endif]-->
+<table role="presentation" class="em-card" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff" style="max-width:600px;width:100%;background-color:#ffffff;border:1px solid #d6dae6;">
+
+<!-- Header: logo and name on the site's navy -->
+<tr>
+<td class="em-pad" bgcolor="#02071c" style="background-color:#02071c;padding:20px 36px;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+<tr>
+<td width="60" style="vertical-align:middle;">
+<a href="{{link_home}}" style="text-decoration:none;"><img src="{{logo_url}}" width="48" height="49" alt="GG Trading" style="display:block;width:48px;height:auto;border:0;color:#0af57c;font-family:Arial,Helvetica,sans-serif;font-size:16px;font-weight:700;"></a>
+</td>
+<td style="vertical-align:middle;font-family:Arial,Helvetica,sans-serif;">
+<a href="{{link_home}}" style="color:#ffffff;text-decoration:none;font-size:18px;font-weight:700;letter-spacing:.02em;">GG Trading</a>
+<div style="font-family:Menlo,Consolas,'Courier New',monospace;font-size:10px;letter-spacing:.14em;color:#0af57c;text-transform:uppercase;margin-top:2px;">Growth &amp; Gains Trading</div>
+</td>
+</tr>
+</table>
+</td>
+</tr>
+<!-- Header menu: the site's main navigation -->
+<tr>
+<td bgcolor="#081431" style="background-color:#081431;padding:10px 16px;font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:1.9;text-align:center;">
+<a href="{{link_features}}" style="color:#e4e8ef;text-decoration:none;font-weight:700;padding:0 8px;white-space:nowrap;">Features</a>
+<a href="{{link_performance}}" style="color:#e4e8ef;text-decoration:none;font-weight:700;padding:0 8px;white-space:nowrap;">Performance</a>
+<a href="{{link_streams}}" style="color:#e4e8ef;text-decoration:none;font-weight:700;padding:0 8px;white-space:nowrap;">Streams</a>
+<a href="{{link_pricing}}" style="color:#e4e8ef;text-decoration:none;font-weight:700;padding:0 8px;white-space:nowrap;">Pricing</a>
+<a href="{{link_account}}" style="color:#0af57c;text-decoration:none;font-weight:700;padding:0 8px;white-space:nowrap;">Your account</a>
+</td>
+</tr>
+
+<!-- Body: the email's own content -->
+<tr>
+<td class="em-pad" style="padding:32px 36px 28px 36px;">
+{{content}}
+</td>
+</tr>
+
+<!-- Footer: contact, community links, risk disclaimer, why you got this -->
+<tr>
+<td class="em-foot em-pad" bgcolor="#f5f6fa" style="background-color:#f5f6fa;padding:22px 36px;border-top:1px solid #d6dae6;font-family:Arial,Helvetica,sans-serif;">
+<p class="em-t" style="margin:0 0 10px 0;font-size:13px;color:#4a5368;line-height:1.6;">
+<strong class="em-h" style="color:#0b1226;">GG Trading</strong> &middot; AI-powered Futures &amp; Options intelligence for serious index and commodities traders.<br>
+<a class="em-link" href="mailto:{{contact_email}}" style="color:#6b11df;text-decoration:none;">{{contact_email}}</a>
+</p>
+<p style="margin:0 0 12px 0;font-size:13px;line-height:1.9;">
+<a class="em-link" href="{{link_contact}}" style="color:#6b11df;text-decoration:none;font-weight:700;margin-right:12px;white-space:nowrap;">Contact</a>
+<a class="em-link" href="{{discord_url}}" style="color:#6b11df;text-decoration:none;font-weight:700;margin-right:12px;white-space:nowrap;">Discord</a>
+<a class="em-link" href="{{kick_url}}" style="color:#6b11df;text-decoration:none;font-weight:700;margin-right:12px;white-space:nowrap;">Kick</a>
+<a class="em-link" href="{{instagram_url}}" style="color:#6b11df;text-decoration:none;font-weight:700;white-space:nowrap;">Instagram</a>
+</p>
+<p class="em-risk" style="margin:0 0 10px 0;font-size:11px;color:#b42318;line-height:1.55;">
+Futures and options trading involves substantial risk of loss and is not suitable for all investors. Past performance is not indicative of future results.
+</p>
+<p class="em-m" style="margin:0;font-size:11px;color:#6b7386;line-height:1.6;">
+{{footer_note}}<br>
+<a class="em-m" href="{{link_terms}}" style="color:#6b7386;">Terms of Service</a> &nbsp;&middot;&nbsp; <a class="em-m" href="{{link_home}}" style="color:#6b7386;">{{site_host}}</a>
+</p>
+</td>
+</tr>
+
+</table>
+<!--[if mso]></td></tr></table><![endif]-->
+
+</td>
+</tr>
+</table>
+</body>
+</html>
