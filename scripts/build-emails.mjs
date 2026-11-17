@@ -14,9 +14,8 @@ const strip = (html) => html.replace(/<!--(?!\[if)[\s\S]*?-->\n?/g, "").trim();
 const check = process.argv.includes("--check");
 const stale = [];
 const write = (path, body) => {
-  if (check) { if (!existsSync(path) || readFileSync(path, "utf8").replace(/
-/g, "
-") !== body) stale.push(path); }
+  // Compared without CR, so a Windows checkout (core.autocrlf) doesn't count as stale.
+  if (check) { if (!existsSync(path) || readFileSync(path, "utf8").replace(/\r\n/g, "\n") !== body) stale.push(path); }
   else writeFileSync(path, body);
 };
 
