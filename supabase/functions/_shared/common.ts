@@ -49,7 +49,10 @@ export interface Email {
   to: string;
   toName?: string;
   subject: string;
+  /** The plain-text version. */
   message: string;
+  /** The HTML version, from renderEmail() in email-render.ts (docs/email-templates). */
+  html?: string;
   replyTo?: string;
 }
 
@@ -57,7 +60,8 @@ export interface Email {
  * Sends emails through Resend (https://resend.com) in one batch call.
  * RESEND_API_KEY is a server-side secret: set it with `supabase secrets set`, never in the repo or the site.
  * RESEND_FROM must be an address on a domain verified in Resend, e.g. "GG Trading <noreply@ggtrading.io>".
- * `template` is kept so callers don't change; both kinds go out as plain-text emails.
+ * `template` says who it's for: "user" (outbound, docs/email-templates/base/outbound) or "admin" (inbound).
+ * Each email goes out as HTML plus its plain-text version.
  * Returns false if Resend isn't set up yet or the send failed; the data is saved either way.
  */
 export async function sendEmails(emails: { template: "user" | "admin"; email: Email }[]): Promise<boolean> {
@@ -78,6 +82,7 @@ export async function sendEmails(emails: { template: "user" | "admin"; email: Em
         to: email.toName ? [`${email.toName.replace(/[<>"]/g, "")} <${email.to}>`] : addresses(email.to),
         subject: email.subject,
         text: email.message,
+        ...(email.html ? { html: email.html } : {}),
         reply_to: addresses(email.replyTo ?? ADMIN_EMAIL),
       })),
     ),

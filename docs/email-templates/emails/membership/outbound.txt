@@ -1,0 +1,7 @@
+Hi{{#name}} {{name}}{{/name}},
+
+Thanks for joining GG Trading! You've signed up for the {{plan}} plan. We'll be in touch with your next steps soon.
+
+Your account: {{link_account}}
+
+The GG Trading team

@@ -1,0 +1,21 @@
+{
+  "_note": "Plan signup without payment (supabase/functions/membership). Outbound to the member, inbound to ADMIN_EMAIL with Reply-To the member.",
+  "outbound": {
+    "subject": "Welcome to GG Trading {{plan}}",
+    "preheader": "You've signed up for the {{plan}} plan.",
+    "footer_note": "You're getting this because you signed up for a GG Trading plan."
+  },
+  "inbound": {
+    "subject": "New GG Trading {{plan}} signup",
+    "preheader": "{{display_name}} <{{email}}> chose {{plan}}",
+    "header_label": "Plan signup",
+    "footer_note": "Hit Reply to answer {{email}} directly. Saved in Supabase, table profiles."
+  },
+  "sample": {
+    "name": "Jordan Sample",
+    "display_name": "Jordan Sample",
+    "email": "jordan@example.com",
+    "plan": "Pro",
+    "previous_plan": "Free"
+  }
+}

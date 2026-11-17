@@ -1,0 +1,21 @@
+{
+  "_note": "Contact form (supabase/functions/contact). Outbound goes to the visitor and does NOT repeat their message, so the form cannot be used to send someone arbitrary text. Inbound goes to ADMIN_EMAIL with Reply-To the visitor. Variables: forms.md.",
+  "outbound": {
+    "subject": "We got your message",
+    "preheader": "Thanks for contacting GG Trading. We'll get back to you soon.",
+    "footer_note": "You're getting this one-time confirmation because you sent a message on ggtrading.io. It doesn't sign you up for anything."
+  },
+  "inbound": {
+    "subject": "New GG Trading contact message from {{name}}",
+    "preheader": "{{name}} <{{email}}>",
+    "header_label": "Contact message",
+    "footer_note": "Hit Reply to answer {{email}} directly. Saved in Supabase, table contact_messages."
+  },
+  "sample": {
+    "name": "Jordan Sample",
+    "email": "jordan@example.com",
+    "member": "yes",
+    "member_line": "Yes, signed in",
+    "message": "Do you cover NQ on Sundays?\n<b>test</b> & \"quotes\""
+  }
+}

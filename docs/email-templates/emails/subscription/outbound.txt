@@ -1,0 +1,7 @@
+Hi{{#name}} {{name}}{{/name}},
+
+Thanks for subscribing to GG Trading {{plan}}! Your payment went through and your plan is active.
+
+You can see your plan, invoices and the cancel option any time on your account page: {{link_account}}
+
+The GG Trading team

@@ -1,6 +1,7 @@
 // Membership signup: a signed-in member picks a plan. Saves it, then emails the member and VFTech.
 // There are no payments yet; this records who wants which plan.
-import { ADMIN_EMAIL, json, preflight, requestUser, sendEmails, serviceClient, SITE_NAME } from "../_shared/common.ts";
+import { ADMIN_EMAIL, json, preflight, requestUser, sendEmails, serviceClient, siteOrigin } from "../_shared/common.ts";
+import { renderEmail } from "../_shared/email-render.ts";
 
 const PLANS: Record<string, string> = { free: "Free", pro: "Pro", elite: "Elite" };
 
@@ -32,28 +33,15 @@ Deno.serve(async (req) => {
   }
 
   const name = profile?.full_name ?? (user.user_metadata?.full_name as string | undefined) ?? "";
+  // docs/email-templates/emails/membership
+  const origin = siteOrigin(req);
+  const vars = {
+    name, display_name: name || "A new member", email: user.email!, plan: PLANS[plan],
+    previous_plan: profile?.plan ? PLANS[profile.plan] ?? profile.plan : "",
+  };
   await sendEmails([
-    {
-      template: "user",
-      email: {
-        to: user.email!,
-        toName: name,
-        subject: `Welcome to ${SITE_NAME} ${PLANS[plan]}`,
-        message:
-          `Hi${name ? ` ${name}` : ""},\n\nThanks for joining ${SITE_NAME}! You've signed up for the ${PLANS[plan]} plan. ` +
-          `We'll be in touch with your next steps soon.`,
-      },
-    },
-    {
-      template: "admin",
-      email: {
-        to: ADMIN_EMAIL,
-        subject: `New ${SITE_NAME} ${PLANS[plan]} signup`,
-        message: `${name || "A new member"} <${user.email}> signed up for the ${PLANS[plan]} plan` +
-          (profile?.plan ? ` (was ${PLANS[profile.plan] ?? profile.plan}).` : "."),
-        replyTo: user.email,
-      },
-    },
+    { template: "user", email: { to: user.email!, toName: name, ...renderEmail("membership", "outbound", vars, origin) } },
+    { template: "admin", email: { to: ADMIN_EMAIL, replyTo: user.email, ...renderEmail("membership", "inbound", vars, origin) } },
   ]);
 
   return json(req, 200, { ok: true, plan });

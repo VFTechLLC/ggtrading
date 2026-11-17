@@ -1,0 +1,7 @@
+Subject: New GG Trading Pro signup
+
+Jordan Sample <jordan@example.com> signed up for the Pro plan (was Free).
+
+------------------------------------------------------------
+Sent Nov 17, 2026, 10:04 AM ET by ggtrading.io
+Hit Reply to answer jordan@example.com directly. Saved in Supabase, table profiles.
